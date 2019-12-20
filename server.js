@@ -6,23 +6,13 @@ const books = [
         id: '1',
         title: 'Thank you Lord!',
         color: 'RED',
-        authors: [{
-            id: '1',
-            name: 'Zlantan Otayo',
-            phone: '0989374343',
-            email: 'zlantan@yahoo.com'
-        }]
+         
     },
     {
         id: '2',
         title: 'All i have to say!',
         color: 'BLACK',
-        authors: [{
-            id: '1',
-            name: 'Zlantan Otayo',
-            phone: '0989374343',
-            email: 'zlantan@yahoo.com'
-        }]
+         
     }
 ];
 
@@ -101,6 +91,13 @@ const resolvers = {
         getAuthors: () => authors,
         search: (_, {}, ctx, info) => {
             return 
+        }
+    },
+
+    Book: {
+        authors: ({id, title, color}, args, ctx, info) => {
+            const author = authors.find(a => a.id == id)
+            return [author]
         }
     }
 }
