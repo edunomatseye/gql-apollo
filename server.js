@@ -1,4 +1,4 @@
-const { ApolloServer, gql, SchemaDirectiveVisitor } = require('apollo-server');
+const { ApolloServer, gql, SchemaDirectiveVisitor, AuthenticationError } = require('apollo-server');
 const { GraphQLScalarType } = require('graphql');
 
 const books = [
@@ -180,7 +180,7 @@ const context = ({ req }) => {
     const user = getUser(token, uid);
 
     //throw an error if user is not found
-    if(!user) throw new Error('User Not Found')
+    if(!user) throw new AuthenticationError('User Not Found')
 
 
 
@@ -201,6 +201,7 @@ const server = new ApolloServer({
         upper: UpperCaseDirective
     },
     context,
+    tracing: true,
 });
 
 server.listen().then(({url}) => {
