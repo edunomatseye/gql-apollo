@@ -1,4 +1,10 @@
-const { ApolloServer, gql, SchemaDirectiveVisitor, AuthenticationError } = require('apollo-server');
+const { 
+    ApolloServer, 
+    gql, 
+    SchemaDirectiveVisitor, 
+    AuthenticationError,
+    UserInputError,
+} = require('apollo-server');
 const { GraphQLScalarType } = require('graphql');
 
 const books = [
@@ -80,12 +86,36 @@ const typeDefs = gql`
         authors: [Author]
     }
 
+    type File {
+        filename: String!
+        mimetype: String!
+        encoding: String!
+    }
+
+    type Post {
+        author: String
+        comment: String
+    }
+
+    type Mutation {
+        userInputError(input: String): String
+        singleUpload(file: Upload!): File!
+        addPost(author: String, comment: String): Post
+    }
+
+    type Subscription {
+        postAdded: Post
+    }
+
     type Query {
         getBook(id: String, color: AllowedColor!): Book
         getBooks: [Book]
         getAuthors: [Author]
         search: [Result]
         getAppUser(id: String): User
+        authenticationError: String
+        uploads : [File]
+        posts: [Post]
     }
 `;
 
@@ -119,6 +149,12 @@ const resolvers = {
         getAuthors: () => authors,
         search: (_, {}, ctx, info) => {
             return 
+        },
+        authenticationError: (parent, args, context) => {
+            throw new AuthenticationError('must authenticate');
+        },
+        uploads: (_, args, ctx, info) => {
+            return
         }
     },
 
@@ -138,6 +174,28 @@ const resolvers = {
         authors: ({id, }, args, ctx, info) => {
             const author = authors.find(a => a.id == id)
             return [author]
+        }
+    },
+
+    Mutation: {
+        userInputError: (parent, args, context, info) => {
+          if (args.input !== 'expected') {
+            throw new UserInputError('Form Arguments invalid', {
+              invalidArgs: Object.keys(args),
+            });
+          }
+        },
+        singleUpload: (parent, args, ctx, info) => {
+            return args.file.then(file => {
+                return file
+            })
+        }
+    },
+
+    Subscription: {
+        postAdded: {
+            //additional event labels can be passed to ascyncIterator creation.
+            
         }
     },
 }
@@ -170,8 +228,11 @@ const generateUserCRUD = ({ user }) => ({
 })
 
 //GraphQL context object
-const context = ({ req }) => {
+const context = async ({ req, connection }) => {
 
+    if(connection){
+        return connection.context
+    }
     //get the user token from the headers
     const token = req.headers.authentication;
     const uid = req.headers.uid;
@@ -181,9 +242,6 @@ const context = ({ req }) => {
 
     //throw an error if user is not found
     if(!user) throw new AuthenticationError('User Not Found')
-
-
-
 
 
     return ({
