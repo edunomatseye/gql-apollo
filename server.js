@@ -241,7 +241,7 @@ const context = async ({ req, connection }) => {
     const user = getUser(token, uid);
 
     //throw an error if user is not found
-    if(!user) throw new AuthenticationError('User Not Found')
+    //if(!user) throw new AuthenticationError('User Not Found')
 
 
     return ({
@@ -260,6 +260,11 @@ const server = new ApolloServer({
     },
     context,
     tracing: true,
+    engine: {
+        apiKey: process.env.ENGINE_API_KEY,
+        schemaTag: 'Beta',
+    },
+    cors: true,
 });
 
 server.listen().then(({url}) => {
