@@ -262,11 +262,11 @@ const server = new ApolloServer({
     tracing: true,
     engine: {
         apiKey: process.env.ENGINE_API_KEY,
-        schemaTag: 'Beta',
+        schemaTag: process.env.ENGINE_SCHEMA_TAG,
     },
     cors: true,
 });
 
 server.listen().then(({url}) => {
-    console.log(`Server started at ${url}...`)
+    console.log(`🚀 Server started at ${url}...`)
 })
