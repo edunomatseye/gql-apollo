@@ -228,7 +228,7 @@ const generateUserCRUD = ({ user }) => ({
 })
 
 //GraphQL context object
-const context = async ({ req, connection }) => {
+const context = async ({ req, res, connection }) => {
 
     if(connection){
         return connection.context
